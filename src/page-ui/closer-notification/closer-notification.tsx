@@ -3,12 +3,14 @@ import { Breads, Cashbacks } from "./_components";
 import { Link } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
 import { Title } from "@/components";
-import { useGetNotificationsQuery } from "@/integration";
+import { RootState, useGetNotificationsQuery } from "@/integration";
 import { socket } from "@/utils";
 import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export const CloserNotification = () => {
-  const { data: getNotifications, refetch } = useGetNotificationsQuery({});
+  const {bakerRoomId} = useSelector((state: RootState) => state.expense)
+  const { data: getNotifications, refetch } = useGetNotificationsQuery(bakerRoomId as string);
 
   useEffect(() => {
     const handleNotification = () => refetch();

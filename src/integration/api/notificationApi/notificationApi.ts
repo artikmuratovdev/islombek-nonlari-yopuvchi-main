@@ -12,9 +12,9 @@ export const notificationApi = baseApi.injectEndpoints({
         body: data,
       }),
     }),
-    getNotifications: build.query<GetNotification[], object>({
-      query: () => ({
-        url: PATHS.NOTIFICATIONS,
+    getNotifications: build.query<GetNotification[], string>({
+      query: (userId) => ({
+        url: PATHS.INFO_NOTIFICATION + userId + PATHS.GET_INFO_NOTIFICATION,
         method: "GET",
       }),
       async onCacheEntryAdded(
