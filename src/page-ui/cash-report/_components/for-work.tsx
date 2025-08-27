@@ -61,7 +61,7 @@ export const ForWork = ({ items }: { items: GetExpensesResponse[] }) => {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <Toaster />
-      <div className='space-y-4'>
+      <div className='space-y-4 mb-16'>
         {items &&
           items.map((item) => (
             <div

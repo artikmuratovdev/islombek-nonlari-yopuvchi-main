@@ -56,7 +56,7 @@ export const SelectUser = forwardRef<HTMLButtonElement, SelectProps>(
                 className="text-[#1C2C57] text-[16px] font-semibold"
                 role="option"
               >
-                {item?.fullName}
+                {item?.fullName} --- {item.role}
               </SelectItem>
             ))}
           </SelectGroup>
