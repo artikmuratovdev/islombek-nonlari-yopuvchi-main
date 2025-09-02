@@ -14,7 +14,7 @@ import { useSelector } from "react-redux";
 
 export const CashReport = () => {
   const {bakerRoomId,balance} = useSelector((state: RootState) => state.expense)
-  const {data:expenses} = useGetAllExpenseQuery(bakerRoomId as string)
+  const {data:expenses, refetch} = useGetAllExpenseQuery(bakerRoomId as string)
 
   const for_work = expenses?.filter(expense => (expense.expense_type === 'for_work' && expense))
   const for_salary = expenses?.filter(expense => (expense.expense_type === 'for_salary' && expense))
@@ -59,7 +59,7 @@ export const CashReport = () => {
         </TabsContent>
       </Tabs>
 
-      <AddReport />
+      <AddReport refetch={refetch} />
       <CloseCheckout />
     </div>
   );

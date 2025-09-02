@@ -17,7 +17,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { FaPlus } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 
-export const AddReport = () => {
+export const AddReport = ({refetch}:{refetch:() => void}) => {
   const { data: getUsers, isLoading: getUsersLoading } = useGetUsersQuery([
     'CEO',
     'ADMIN',
@@ -62,6 +62,7 @@ export const AddReport = () => {
       const result = await createExpense(submittedData).unwrap();
       toast.success(result.message);
       reset();
+      refetch();
     } catch (error : any) {
       toast.error(error.data.message);
     }
