@@ -35,9 +35,9 @@ export const OrderApi = baseApi.injectEndpoints({
         body
       })
     }),
-    submitOrder : build.mutation<CreateOrdersResponse, string>({
-      query: (id) => ({
-        url: PATHS.SUBMIT_ORDER+id,
+    submitOrder : build.mutation<CreateOrdersResponse, [string,string]>({
+      query: ([id,bakerRoom]) => ({
+        url: PATHS.BASE_ORDER + bakerRoom + '/' + PATHS.SUBMIT_ORDER+id,
         method: 'POST',
       })
     })

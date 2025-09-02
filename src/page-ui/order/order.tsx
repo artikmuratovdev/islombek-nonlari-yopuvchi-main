@@ -12,6 +12,7 @@ import {
   useEditOrderMutation,
   useGetBreadPriceQuery,
   useGetOrderQuery,
+  useProfileQuery,
   useSubmitOrderMutation,
 } from '@/integration';
 import { MoneyFormatter } from '@/utils/money-formatter';
@@ -20,17 +21,20 @@ import { Controller, useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaPlus } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export const Order = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: order, refetch : getOrder} = useGetOrderQuery(id as string);
+  const {data:me} = useProfileQuery({})
   const { data: bread , refetch: getBread} = useGetBreadPriceQuery();
   const [editOrder] = useEditOrderMutation();
   const [breads, setBreads] = useState<BreadsInfo[]>([]);
   const [qarz, setQarz] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
   const [submitOrder] = useSubmitOrderMutation();
+
 
   useEffect(() => {
     if (order && bread) {
@@ -134,6 +138,20 @@ export const Order = () => {
     }
   };
 
+  const submittingOrder = async () => {
+    try {
+      const res = await submitOrder([id as string,me?.bakerRoom as string]) as any;
+      if (res?.error?.data?.message) toast.error(res?.error?.data?.message);
+      if (res.data.message) toast.success('Zakaz topshirildi');
+      console.log("res",res)
+      setOpen(false);
+      reset();
+      navigate('/zakazlar');
+    } catch (error:any) {
+      console.log("err",error)
+    }
+  }
+
   return (
     <div className='mb-12'>
       <Toaster />
@@ -203,9 +221,7 @@ export const Order = () => {
       <Button
         variant={'yellow'}
         className='text-[14px] text-[#1C2C57] font-[700] px-8 fixed bottom-5 left-5'
-        onClick={async () => {
-          submitOrder(id as string);
-        }}
+        onClick={submittingOrder}
       >
         Topshirish
       </Button>
