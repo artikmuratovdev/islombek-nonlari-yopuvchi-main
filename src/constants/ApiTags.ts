@@ -1,5 +1,6 @@
 export enum API_TAGS {
   USER = "USER",
+  REASON = "REASON",
   BRANCH = "BRANCH",
   DOUGHROOM = "DOUGHROOM",
   BAKERY = "BAKERY",

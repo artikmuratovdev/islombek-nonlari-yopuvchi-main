@@ -1,3 +1,4 @@
+import { API_TAGS } from "@/constants";
 import { baseApi } from "../baseApi";
 import { PATHS } from "./paths";
 
@@ -10,13 +11,16 @@ export const UserApi = baseApi.injectEndpoints({
                     url: `${PATHS.GET_ALL_USERS}?${roleParams}`,
                     method: 'GET',
                 };
+
             },
+            providesTags: [API_TAGS.USER],
         }),
         getUser: build.query<GetAllUsersResponse, GetUserRequest>({
             query: (id) => ({
                 url: `${PATHS.GET_USER}${id}`,
                 method: "GET",
-            })
+            }),
+            providesTags: [API_TAGS.USER],
         }),
     })
 })

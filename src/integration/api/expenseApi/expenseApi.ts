@@ -25,6 +25,7 @@ export const ExpenseApi = baseApi.injectEndpoints({
         method: 'POST',
         body
       }),
+      invalidatesTags: [API_TAGS.EXPENSE],
     }),
     deleteExpense: build.mutation<CreateExpenseResponse, string>({
       query: (id) => ({
@@ -47,6 +48,7 @@ export const ExpenseApi = baseApi.injectEndpoints({
         method: 'POST',
         body
       }),
+      invalidatesTags: [API_TAGS.EXPENSE],
     })
   }),
 });

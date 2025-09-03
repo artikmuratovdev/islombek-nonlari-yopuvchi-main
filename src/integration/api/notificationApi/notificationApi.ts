@@ -2,6 +2,7 @@ import { socket } from "@/utils";
 import { baseApi } from "../baseApi";
 import { PATHS } from "./path";
 import { GetNotification, NotificationPushRequest } from "./types";
+import { API_TAGS } from "@/constants";
 
 export const notificationApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -11,6 +12,7 @@ export const notificationApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: [API_TAGS.NOTIFICATION],
     }),
     getNotifications: build.query<GetNotification[], string>({
       query: (userId) => ({
@@ -36,6 +38,7 @@ export const notificationApi = baseApi.injectEndpoints({
         await cacheEntryRemoved;
         socket.off("notification");
       },
+      providesTags: [API_TAGS.NOTIFICATION],
     }),
     updateNotification: build.mutation<void, { id: string; status: string }>({
       query: ({ id, status }) => ({
@@ -43,6 +46,7 @@ export const notificationApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: { status },
       }),
+      invalidatesTags: [API_TAGS.NOTIFICATION],
     }),
     notificationSubscribe: build.mutation<object, object>({
       query: (data) => ({
@@ -50,6 +54,7 @@ export const notificationApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: [API_TAGS.NOTIFICATION],
     }),
     notificationPush: build.mutation<Notification, NotificationPushRequest>({
       query: ({ id, body }) => ({
@@ -57,6 +62,7 @@ export const notificationApi = baseApi.injectEndpoints({
         method: "POST",
         body: body,
       }),
+      invalidatesTags: [API_TAGS.NOTIFICATION],
     }),
   }),
 });
