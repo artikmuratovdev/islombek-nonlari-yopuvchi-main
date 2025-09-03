@@ -28,7 +28,21 @@ export interface BakerRoomSalaryResponse {
         };
       }
     ];
-    doughs: [];
+    doughs: [
+      {
+        _id: string;
+        doughType: {
+          _id: string;
+          title: string;
+          price: number;
+          price_for_baker: number;
+        };
+        createdAt: string;
+        updatedAt: string;
+        count: number;
+        totalMoney: number;
+      }
+    ];
     remainingMoney: number;
   };
   dividerInfo: {

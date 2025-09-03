@@ -9,10 +9,11 @@ import {
 } from "@/integration";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useHandleRequest } from "@/hooks";
+import { BottomSheet } from "@/components/common/bottom-sheet";
+
 export const InOven = () => {
   const [open, setOpen] = useState(false);
   const [bakeBreadId, setBakeBreadId] = useState("");
@@ -42,13 +43,11 @@ export const InOven = () => {
         }).unwrap();
       },
       onSuccess: () => {
+        setOpen(false);
         reset();
-        setOpen(!open);
       },
     });
   };
-
-  console.log(breads);
 
   return (
     <div>
@@ -63,6 +62,7 @@ export const InOven = () => {
           <Title text={"Tandirda"} className="text-white mx-auto" />
         </div>
       </div>
+
       <div className="flex flex-col gap-y-4 mt-20 px-4">
         {breads && breads?.inOvenBreads?.length > 0 ? (
           breads?.inOvenBreads?.map((item) => (
@@ -75,9 +75,9 @@ export const InOven = () => {
               </h3>
               <button
                 onClick={() => {
-                  setOpen(true);
                   setBakeBreadId(item._id);
                   reset({ count: item.count });
+                  setOpen(true);
                 }}
               >
                 <EditIcon size={16} />
@@ -89,8 +89,10 @@ export const InOven = () => {
         )}
       </div>
 
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="bg-blue-950 rounded-t-xl">
+      <BottomSheet
+        open={open}
+        setOpen={setOpen}
+        children={
           <div className="px-4 my-5">
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-y-4">
@@ -119,18 +121,16 @@ export const InOven = () => {
                   )}
                 />
               </div>
-              <div className="flex justify-end">
-                <Button
-                  className="mt-4 text-blue-950 bg-yellow-400"
-                  type="submit"
-                >
+
+              <div className="flex justify-end gap-2 mt-4">
+                <Button className="text-blue-950 bg-yellow-400" type="submit">
                   Yopish
                 </Button>
               </div>
             </form>
           </div>
-        </DrawerContent>
-      </Drawer>
+        }
+      />
     </div>
   );
 };

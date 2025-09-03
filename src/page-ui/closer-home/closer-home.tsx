@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useNavigate } from "react-router-dom";
+import { TbMessageReport } from "react-icons/tb";
+import { TiMessages } from "react-icons/ti";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useStorage } from "@/utils";
 import { Loader } from "@/components";
@@ -27,7 +29,6 @@ import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-
 interface FormData {
   salary: number;
 }
@@ -52,10 +53,12 @@ export const CloserHome = () => {
 
   const { data: me } = useProfileQuery({});
 
-  const {bakerRoomId} = useSelector((state: RootState) => state.expense);
-  
+  const { bakerRoomId } = useSelector((state: RootState) => state.expense);
+
   console.log("baker", bakerRoomId);
-  const { data: baker, isLoading } = useGetBakerRoomQuery({id: bakerRoomId.toString()});
+  const { data: baker, isLoading } = useGetBakerRoomQuery({
+    id: bakerRoomId.toString(),
+  });
 
   const navigate = useNavigate();
 
@@ -122,12 +125,19 @@ export const CloserHome = () => {
     });
   };
 
-  console.log(salary);
-
   return (
-    <div>
+    <div className="pt-[10px]">
+      <div className="flex items-center text-[#FFCC15] justify-between">
+        <Link to="/shikoyatlar" aria-label="Shikoyatlar">
+          <TbMessageReport size={25} />
+        </Link>
 
-      <div className="grid grid-cols-2 w-full gap-[10px]">
+        <Link to="/message" aria-label="Xabarlar">
+          <TiMessages size={25} />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 w-full gap-[10px] pt-[30px]">
         <div className="rounded-[16px] cursor-pointer border-[3px] text-center bg-white text-[#1C2C57] py-[20px] border-[#FFCC15]">
           {isLoading ? (
             <Loader dark />
@@ -147,7 +157,7 @@ export const CloserHome = () => {
             <Loader dark />
           ) : (
             <p className="text-[32px] font-[600]">
-              {baker?.bakerRoom?.roundsCount || 0}
+              {baker?.bakerRoom?.roundsCount.toLocaleString("ru-RU") || 0}
             </p>
           )}
           <p className="text-[20px] font-[800]">Zuvala</p>
@@ -175,7 +185,7 @@ export const CloserHome = () => {
             <Loader dark />
           ) : (
             <p className="text-[32px] font-[600]">
-              {baker?.bakerRoom?.breadsCount || 0}
+              {baker?.bakerRoom?.breadsCount.toLocaleString("ru-RU") || 0}
             </p>
           )}
           <p className="text-[20px] font-[800]">Non</p>
@@ -189,7 +199,7 @@ export const CloserHome = () => {
             <Loader dark />
           ) : (
             <p className="text-[32px] font-[600]">
-              {baker?.bakerRoom?.deliveredCount || 0}
+              {baker?.bakerRoom?.deliveredCount.toLocaleString("ru-RU") || 0}
             </p>
           )}
           <p className="text-[20px] font-[800]">Yetkazuvchi</p>
@@ -203,7 +213,7 @@ export const CloserHome = () => {
             <Loader dark />
           ) : (
             <p className="text-[32px] font-[600]">
-              {baker?.bakerRoom?.soldCount || 0}
+              {baker?.bakerRoom?.soldCount.toLocaleString("ru-RU") || 0}
             </p>
           )}
           <p className="text-[20px] font-[800]">Sotuv</p>
@@ -225,13 +235,14 @@ export const CloserHome = () => {
               >
                 <div className="px-3 py-px bg-zinc-300 rounded-md">
                   <h4 className="text-blue-950 text-base font-semibold">
-                    {salary?.bakerInfo?.totalCount || 0}
+                    {salary?.bakerInfo?.totalCount.toLocaleString("ru-RU") || 0}
                   </h4>
                 </div>
                 <div className="flex gap-x-3 items-center">
                   <div className="px-3 py-px bg-zinc-300 rounded-md">
                     <h4 className="text-blue-950 text-base font-semibold">
-                      {salary?.bakerInfo?.totalMoney || 0}
+                      {salary?.bakerInfo?.totalMoney.toLocaleString("ru-RU") ||
+                        0}
                     </h4>
                   </div>
                   <div className="p-1 bg-[#1C2C57] rounded-[8px]">
@@ -260,50 +271,58 @@ export const CloserHome = () => {
                   </h4>
                 </div>
                 <div className="flex flex-col bg-white rounded-lg border-2 border-yellow-500 mt-1 gap-y-2">
-                  {salary?.bakerInfo?.doughs?.map((item, index) => (
-                    <div key={index} about={item}>
-                      <div className="flex justify-between items-center px-2 py-1 pb-2">
-                        <h4 className="text-blue-950 text-base font-semibold w-2/5">
-                          Patir
-                        </h4>
-                        <h4 className="text-blue-950 text-base font-semibold w-1/4">
-                          580
-                        </h4>
-                        <h4 className="text-blue-950 text-base font-semibold w-1/4">
-                          576
-                        </h4>
-                        <h4 className="text-blue-950 text-base font-semibold w-1/4">
-                          334 080
-                        </h4>
+                  {salary?.bakerInfo?.doughs?.map((item, index) => {
+                    console.log(item);
+
+                    return (
+                      <div key={index}>
+                        <div className="flex justify-between items-center px-2 py-1 pb-2">
+                          <h4 className="text-blue-950 text-base font-semibold w-2/5">
+                            {item?.doughType?.title}
+                          </h4>
+                          <h4 className="text-blue-950 text-base font-semibold w-1/4">
+                            {item?.count.toLocaleString("ru-RU")}
+                          </h4>
+                          <h4 className="text-blue-950 text-base font-semibold w-1/4">
+                            {item?.doughType?.price_for_baker.toLocaleString(
+                              "ru-RU"
+                            )}
+                          </h4>
+                          <h4 className="text-blue-950 text-base font-semibold w-1/4">
+                            {item?.totalMoney.toLocaleString("ru-RU")}
+                          </h4>
+                        </div>
+                        <div className="w-full bg-yellow-500 h-px" />
                       </div>
-                      <div className="w-full bg-yellow-500 h-px" />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
         <div className="flex flex-col gap-y-3 my-2">
-          {salary?.bakerInfo?.bakers?.map((item, index: number) => (
-            <div
-              key={index}
-              onClick={() => {
-                setOpen(!open);
-                setBakerUserId(item._id);
-              }}
-              className="w-full bg-white border-2 border-yellow-500 rounded-lg flex items-center justify-between px-4 py-2"
-            >
-              <h3 className="text-blue-950 text-base font-semibold">
-                {item?.user?.fullName}
-              </h3>
-              <div className="px-3 py-px bg-zinc-300 rounded-md">
+          {salary?.bakerInfo?.bakers?.map((item, index: number) => {
+            return (
+              <div
+                key={index}
+                onClick={() => {
+                  setOpen(!open);
+                  setBakerUserId(item.user?._id as string);
+                }}
+                className="w-full bg-white border-2 border-yellow-500 rounded-lg flex items-center justify-between px-4 py-2"
+              >
                 <h3 className="text-blue-950 text-base font-semibold">
-                  {item?.salary}
+                  {item?.user?.fullName}
                 </h3>
+                <div className="px-3 py-px bg-zinc-300 rounded-md">
+                  <h3 className="text-blue-950 text-base font-semibold">
+                    {item?.salary.toLocaleString("ru-RU")}
+                  </h3>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <div>
           <Accordion
@@ -331,22 +350,24 @@ export const CloserHome = () => {
               </AccordionTrigger>
 
               <AccordionContent className="flex flex-col bg-white rounded-lg border-2 border-yellow-500 mt-2">
-                {users?.map((item, index, arr) => (
-                  <div
-                    onClick={() =>
-                      addBakerRoomSalaryDailyWorkerHandler(item._id)
-                    }
-                    key={index}
-                    className="py-1 flex flex-col gap-y-1"
-                  >
-                    <h4 className="text-blue-950 text-base font-semibold px-4 cursor-pointer">
-                      {item.fullName}
-                    </h4>
-                    {index !== arr.length - 1 && (
-                      <div className="w-full bg-yellow-500 h-px" />
-                    )}
-                  </div>
-                ))}
+                {users?.map((item, index, arr) => {
+                  return (
+                    <div
+                      onClick={() =>
+                        addBakerRoomSalaryDailyWorkerHandler(item._id)
+                      }
+                      key={index}
+                      className="py-1 flex flex-col gap-y-1"
+                    >
+                      <h4 className="text-blue-950 text-base font-semibold px-4 cursor-pointer">
+                        {item.fullName}
+                      </h4>
+                      {index !== arr.length - 1 && (
+                        <div className="w-full bg-yellow-500 h-px" />
+                      )}
+                    </div>
+                  );
+                })}
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -359,6 +380,12 @@ export const CloserHome = () => {
               <label htmlFor="salary" className="text-white">
                 Yopuvchiga pul berish
               </label>
+              <div>
+                <h4 className="text-white text-base font-semibold">
+                  Yopuvchidagi pul:{" "}
+                  {salary?.bakerInfo?.totalMoney.toLocaleString("ru-RU") || 0}
+                </h4>
+              </div>
               <Controller
                 control={control}
                 name="salary"

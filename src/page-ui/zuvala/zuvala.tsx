@@ -14,21 +14,13 @@ import {
 } from "@/integration";
 import { useHandleRequest } from "@/hooks";
 import toast from "react-hot-toast";
+import { TimeAgo } from "./_components";
 
 export const Zuvala = () => {
   const { data: me } = useProfileQuery({});
   const { data: dough } = useGetDoughsQuery({ id: me?.bakerRoom as string });
   const [patchDoughs] = usePatchDoughsMutation({});
   const handleRequest = useHandleRequest();
-  const formatTime = (ms: number) => {
-    const hours = Math.floor(ms / (1000 * 60 * 60));
-    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-
-    return `${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   const onSubmit = async (id: string) => {
     handleRequest({
@@ -66,9 +58,7 @@ export const Zuvala = () => {
               {item.createdAt.slice(11, 16)}
             </h3>
             <div className="px-3 py-1 bg-yellow-500 rounded-md">
-              <h3 className="text-blue-950 text-sm font-semibold">
-                {formatTime(15 * 60 * 60 * 1000)}
-              </h3>
+              <TimeAgo createdAt={item.createdAt} />
             </div>
 
             <DropdownMenu>
