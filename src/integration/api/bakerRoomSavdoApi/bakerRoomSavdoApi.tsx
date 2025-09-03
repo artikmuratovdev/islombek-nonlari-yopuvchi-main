@@ -1,6 +1,5 @@
 import { API_TAGS } from "@/constants";
 import { baseApi } from "../baseApi";
-import { PATHS } from "./paths";
 import {
   addBakerRoomBreadSaleRequest,
   BakerRoomBreadSaleResponse,
