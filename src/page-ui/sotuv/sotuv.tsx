@@ -10,8 +10,6 @@ export const Sotuv = () => {
   console.log(id);
   const { data: product } = useGetBakerRoomBreadSaleQuery({ id: id as string });
 
-  console.log(product);
-
   return (
     <section>
       <header className="border-b-2 border-[#FFCC15] rounded-b-[30px] bg-[#1C2C57] p-[12px] pt-[20px] -ml-[20px] fixed top-0 w-full flex justify-between items-center">

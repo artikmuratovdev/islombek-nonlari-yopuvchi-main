@@ -1,471 +1,400 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Edit, Minus, Plus, Check } from "lucide-react";
-import { IoArrowBack, IoNotifications } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
-import { Label } from "@/components/ui/label";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
-import { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
 import {
+  RootState,
   useAddBakerRoomBreadSaleMutation,
   useGetAllUsersQuery,
   useGetBakerRoomBreadSaleBreadPricesQuery,
-  useProfileQuery,
-} from "@/integration";
-import { Controller, useForm } from "react-hook-form";
-import { useHandleRequest } from "@/hooks";
-import toast from "react-hot-toast";
+} from '@/integration';
+import { useEffect, useState } from 'react';
+import BreadList from './components/BreadList';
+import { breadInfo } from '@/integration/api/bakerRoomSavdoApi/types';
+import { Button } from '@/components/ui/button';
+import { IoArrowBack, IoNotifications } from 'react-icons/io5';
+import { useNavigate } from 'react-router-dom';
+import { Controller, useForm } from 'react-hook-form';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useSelector } from 'react-redux';
+import { TextArea } from '@/components/common/TextArea/text-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import toast, { Toaster } from 'react-hot-toast';
 
-interface breadType {
-  _id: string;
-  title: string;
-  breadPrice: number;
-  breadSoldPrice: number;
-  amount?: number;
-}
+type FormValues = {
+  breadsInfo: breadInfo[];
+  client: string;
+  paidAmount: number;
+  isDebt: boolean;
+  commit: string;
+  phone: string;
+};
 
 export const AddSotuv = () => {
+  const { data: breadPrice } = useGetBakerRoomBreadSaleBreadPricesQuery();
+  const { data: client } = useGetAllUsersQuery({ roles: ['CLIENT'] });
+  const [addSale] = useAddBakerRoomBreadSaleMutation();
+
+  const [breads, setBreads] = useState<breadInfo[]>([]);
+  const [openDrawer, setOpenDrawer] = useState(false);
+  const navigate = useNavigate();
+  const { totalAmount } = useSelector((state: RootState) => state.sotuv);
+  const { bakerRoomId } = useSelector((state: RootState) => state.expense);
+
   const {
     control,
     handleSubmit,
     setValue,
-    reset,
+    watch,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormValues>({
     defaultValues: {
-      breadsInfo: [] as breadType[],
-      client: "",
+      breadsInfo: [],
+      client: '',
       paidAmount: 0,
       isDebt: false,
-      commit: "",
-      phone: "",
+      commit: '',
+      phone: '',
     },
   });
 
-  const navigate = useNavigate();
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [tempPrice, setTempPrice] = useState<number | null>(null);
-  const [bottomSheetOpen, setBottomSheetOpen] = useState(false);
-  const [, setQarzChecked] = useState(false);
-  const [bottomSheetOpen2, setBottomSheetOpen2] = useState(true);
-  const { data: me } = useProfileQuery({});
-
-  const { data: client } = useGetAllUsersQuery({ roles: ["CLIENT"] });
-  const [search, setSearch] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const { data: bread } = useGetBakerRoomBreadSaleBreadPricesQuery();
-  const handleRequest = useHandleRequest();
-  const [addBakerRoomBreadSale] = useAddBakerRoomBreadSaleMutation();
-
   useEffect(() => {
-    if (bread) {
-      setValue(
-        "breadsInfo",
-        bread.map((b: breadType) => ({ ...b, amount: 0 }))
-      );
-    }
-  }, [bread, setValue]);
+    setValue('breadsInfo', breads, { shouldValidate: true });
+  }, [breads, setValue]);
 
-  const handleSavePrice = (id: string) => {
-    if (tempPrice === null) return;
-    const currentBreadsInfo = control._formValues.breadsInfo as breadType[];
-    const updatedBreadsInfo = currentBreadsInfo.map((item: breadType) =>
-      item._id === id ? { ...item, breadSoldPrice: tempPrice } : item
-    );
-    setValue("breadsInfo", updatedBreadsInfo);
-    setEditingId(null);
-    setTempPrice(null);
-  };
+  const isDebt = watch('isDebt');
 
-  const onSubmit = async (data: any) => {
-    handleRequest({
-      request: () => {
-        return addBakerRoomBreadSale({
-          id: me?.bakerRoom as string,
-          body: {
-            client: data?.client,
-            paidAmount: data?.paidAmount,
-            isDebt: data?.isDebt,
-            commit: data?.commit,
-            phone: data?.phone,
-            breadsInfo: data?.breadsInfo,
-          },
-        }).unwrap();
-      },
-      onSuccess: () => {
-        reset();
-        setTimeout(() => {
-          navigate("/sotuv");
-        }, 1000);
-        toast.success("Muvaffaqiyatli qo'shildi");
-      },
-      onError: (err) => {
-        toast.error(
-          (err as { message?: string })?.message || "Xatolik yuz berdi"
-        );
-      },
+  const checkChanged = (breadsInfo: breadInfo[]) => {
+    if (!breadPrice) return false;
+    return breadsInfo.some((item, idx) => {
+      const ref = breadPrice[idx];
+      if (!ref) return true;
+      return item.breadSoldPrice !== ref.breadSoldPrice;
     });
   };
 
+  const onSubmit = async (data: FormValues) => {
+    if (totalAmount === 0) {
+      toast.error("Umumiy summa 0 bo'lishi mumkin emas");
+      return;
+    }
+
+    const isChanged = checkChanged(data.breadsInfo);
+    if (isChanged) {
+      setOpenDrawer(true);
+      return;
+    }
+
+    data.breadsInfo = data.breadsInfo.filter((el) => el.amount !== 0);
+
+    const { message } = await addSale({
+      id: bakerRoomId,
+      body: {
+        breadsInfo: data.breadsInfo,
+        isDebt: false,
+        paidAmount: totalAmount,
+      },
+    }).unwrap();
+
+    if (message) {
+      toast.success(message, { duration: 3000 });
+      navigate('/sotuv');
+    }
+  };
+
+  const onDebtSubmit = async (data: FormValues) => {
+    if (totalAmount === 0) {
+      toast.error("Umumiy summa 0 bo'lishi mumkin emas");
+      return;
+    }
+
+    data.breadsInfo = data.breadsInfo.filter((el) => el.amount !== 0);
+
+    const { message } = await addSale({
+      id: bakerRoomId,
+      body: {
+        breadsInfo: data.breadsInfo,
+        isDebt: true,
+        client: data.client,
+        paidAmount: totalAmount,
+        commit: data.commit,
+      },
+    }).unwrap();
+
+    if (message) {
+      toast.success(message, { duration: 3000 });
+      navigate('/sotuv');
+    }
+  };
+
+  const onPriceChangedSubmit = async (data: FormValues) => {
+    if (totalAmount === 0) {
+      toast.error("Umumiy summa 0 bo'lishi mumkin emas");
+      return;
+    }
+
+    // Telefonni formatlash
+    if (data.phone.startsWith('+998') || data.phone.startsWith('998')) {
+      data.phone = data.phone.replace(/\D/g, '').slice(-9);
+    } else {
+      data.phone = data.phone.replace(/\D/g, '').trim();
+    }
+
+    data.breadsInfo = data.breadsInfo.filter((el) => el.amount !== 0);
+    data.paidAmount = totalAmount;
+
+    const { message } = await addSale({
+      id: bakerRoomId,
+      body: data,
+    }).unwrap();
+
+    if (message) {
+      toast.success(message, { duration: 3000 });
+      navigate('/sotuv');
+    }
+  };
+
   return (
-    <section>
-      <header className="border-b-2 border-[#FFCC15] rounded-b-[30px] bg-[#1C2C57] p-[12px] pt-[20px] -ml-[20px] fixed top-0 w-full flex justify-between items-center">
-        <Button
-          className="w-8 h-8 rounded-full bg-[#FFCC15]"
-          onClick={() => navigate(-1)}
-        >
-          <IoArrowBack size={16} />
-        </Button>
-        <h3 className="text-center justify-center text-white text-2xl font-semibold">
-          Sotuv
-        </h3>
-        <button onClick={() => navigate("/notification")}>
-          <IoNotifications size={25} color="#FFCC15" />
-        </button>
-      </header>
+    <>
+      {/* Main Form */}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Toaster />
+        {/* HEADER */}
+        <header className='border-b-2 border-[#FFCC15] rounded-b-[30px] bg-[#1C2C57] p-[12px] pt-[20px] -ml-[20px] fixed top-0 w-full flex justify-between items-center'>
+          <Button
+            type='button'
+            className='w-8 h-8 rounded-full bg-[#FFCC15]'
+            onClick={() => navigate(-1)}
+          >
+            <IoArrowBack size={16} />
+          </Button>
+          <h3 className='text-center text-white text-2xl font-semibold'>
+            Sotuv
+          </h3>
+          <button type='button' onClick={() => navigate('/notification')}>
+            <IoNotifications size={25} color='#FFCC15' />
+          </button>
+        </header>
 
-      <main className="pt-16">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-y-3"
-        >
-          {/* breadsInfo list */}
+        {/* BREAD LIST */}
+        <div className='space-y-3 pt-2 mb-5 mt-10'>
+          {breadPrice && (
+            <BreadList breadPrices={breadPrice} setBreads={setBreads} />
+          )}
+        </div>
+
+        {/* BOTTOM */}
+        <div className='flex justify-between'>
           <Controller
-            name="breadsInfo"
+            name='isDebt'
             control={control}
             render={({ field }) => (
-              <>
-                {field.value.map((item: breadType, index: number) => (
-                  <div
-                    key={item._id}
-                    className="border-2 border-yellow-500 px-4 flex justify-between items-center py-2 rounded-xl bg-white"
-                  >
-                    <h3 className="text-blue-950 text-sm font-bold">
-                      {item.title}
-                    </h3>
-
-                    {/* Narx tahrirlash */}
-                    <div className="flex gap-x-1 items-center">
-                      {editingId === item._id ? (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            value={tempPrice ?? item.breadSoldPrice}
-                            onChange={(e) =>
-                              setTempPrice(Number(e.target.value))
-                            }
-                            className="w-20 h-6 text-sm"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const updated = [...field.value];
-                              updated[index].breadSoldPrice =
-                                tempPrice ?? item.breadSoldPrice;
-                              field.onChange(updated);
-                              handleSavePrice(item._id);
-                            }}
-                          >
-                            <Check size={16} color="green" />
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <h3 className="text-blue-950 text-sm font-bold">
-                            {item.breadSoldPrice}
-                          </h3>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEditingId(item._id);
-                              setTempPrice(item.breadSoldPrice);
-                            }}
-                          >
-                            <Edit size={16} color="#1C2C57" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-x-2">
-                      <button
-                        type="button"
-                        className="w-5 h-5 bg-blue-950 rounded-full flex items-center justify-center"
-                        onClick={() => {
-                          const updated = [...field.value];
-                          updated[index].amount = Math.max(
-                            (item.amount || 0) - 1,
-                            0
-                          );
-                          field.onChange(updated);
-                        }}
-                      >
-                        <Minus size={16} color="#FFCC15" />
-                      </button>
-                      <h3 className="text-blue-950 text-sm font-bold">
-                        {item.amount}
-                      </h3>
-                      <button
-                        type="button"
-                        className="w-5 h-5 bg-blue-950 rounded-full flex items-center justify-center"
-                        onClick={() => {
-                          const updated = [...field.value];
-                          updated[index].amount = (item.amount || 0) + 1;
-                          field.onChange(updated);
-                        }}
-                      >
-                        <Plus size={16} color="#FFCC15" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
-          />
-
-          {/* umumiy summa */}
-          <Controller
-            name="breadsInfo"
-            control={control}
-            render={({ field }) => {
-              const totalSum = field.value.reduce(
-                (sum: number, item: breadType) =>
-                  sum + (item.breadSoldPrice || 0) * (item.amount || 0),
-                0
-              );
-              return (
-                <h4 className="text-white text-xl font-semibold">
-                  Umumiy summa: {totalSum}
-                </h4>
-              );
-            }}
-          />
-
-          {/* qarz checkbox */}
-          <Controller
-            name="isDebt"
-            control={control}
-            render={({ field }) => (
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-2">
+              <Label
+                htmlFor='qarz'
+                className='text-white flex gap-x-2 items-center'
+              >
+                <span className='relative border-2 border-yellow-400 rounded-full w-6 h-6'>
                   <Checkbox
-                    id="qarz"
-                    className="text-white border-2 border-yellow-400"
+                    id='qarz'
                     checked={field.value}
-                    onCheckedChange={(checked) => {
-                      field.onChange(!!checked);
-                      setQarzChecked(!!checked);
-                      setBottomSheetOpen(!!checked);
-                    }}
+                    onCheckedChange={(val) => field.onChange(!!val)}
+                    className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 border-none'
                   />
-                  <Label htmlFor="qarz" className="text-white">
-                    Qarz
-                  </Label>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="bg-[#FFCC15] text-blue-950 text-sm font-bold px-6 py-1"
-                >
-                  Qo'shish
-                </Button>
-              </div>
+                </span>
+                Qarz
+              </Label>
             )}
           />
-        </form>
-      </main>
 
-      {/* Drawer 1: qarz */}
-      <Drawer
-        open={bottomSheetOpen}
-        onOpenChange={(open) => {
-          setBottomSheetOpen(open);
-          if (!open) {
-            setQarzChecked(false);
-          }
-        }}
-      >
-        <DrawerContent className="bg-blue-950">
-          <div className="h-full px-3 py-4">
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-y-3 relative"
-            >
-              {/* paidAmount */}
-              <div className="flex flex-col gap-y-1">
-                <label htmlFor="paidAmount" className="text-yellow-400">
-                  Olingan pul
-                </label>
-                <Controller
-                  name="paidAmount"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Olingan pul"
-                        id="paidAmount"
-                      />
-                      {errors.paidAmount && (
-                        <span className="text-red-500">
-                          This field is required
-                        </span>
-                      )}
-                    </>
-                  )}
-                />
-              </div>
+          <Button
+            type='submit'
+            className='bg-[#FFCC15] text-blue-950 text-sm font-bold px-6 py-1'
+          >
+            Saqlash
+          </Button>
+        </div>
+      </form>
 
-              {/* client tanlash */}
-              <div className="flex flex-col gap-y-1 relative">
-                <label htmlFor="client" className="text-yellow-400">
-                  Mijozni tanlang
-                </label>
-                <Controller
-                  name="client"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => {
-                    const selected = client?.find((m) => m._id === field.value);
-                    return (
-                      <div className="relative">
-                        <Input
-                          id="client"
-                          placeholder="Mijoz ismini yozing"
-                          value={search || selected?.fullName || ""}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setIsOpen(true);
-                            field.onChange("");
-                          }}
-                          onFocus={() => setIsOpen(true)}
-                          autoComplete="off"
-                        />
-
-                        {isOpen && (
-                          <ul className="absolute bottom-full mb-1 bg-white border rounded-md w-full max-h-40 overflow-y-auto shadow-lg">
-                            {client && client.length > 0 ? (
-                              client
-                                .filter((m) =>
-                                  m.fullName
-                                    .toLowerCase()
-                                    .includes(search.toLowerCase())
-                                )
-                                .map((m) => (
-                                  <li
-                                    key={m._id}
-                                    className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                                    onClick={() => {
-                                      field.onChange(m._id);
-                                      setSearch(m.fullName);
-                                      setIsOpen(false);
-                                    }}
-                                  >
-                                    {m.fullName}
-                                  </li>
-                                ))
-                            ) : (
-                              <li className="px-3 py-2 text-gray-500">
-                                Mijozlar topilmadi
-                              </li>
-                            )}
-                          </ul>
-                        )}
-
-                        {errors.client && (
-                          <span className="text-red-500">
-                            This field is required
-                          </span>
-                        )}
-                      </div>
-                    );
-                  }}
-                />
-              </div>
-
-              {/* sabab */}
+      {/* Drawer: Debt form */}
+      <Drawer open={isDebt} onOpenChange={(open) => setValue('isDebt', open)}>
+        <DrawerContent className='bg-blue-950'>
+          <form
+            onSubmit={handleSubmit(onDebtSubmit)}
+            className='h-full px-3 py-4 flex flex-col gap-y-3'
+          >
+            {/* PaidAmount */}
+            <div className='flex flex-col gap-y-1'>
+              <label htmlFor='paidAmount' className='text-yellow-400'>
+                Olingan pul
+              </label>
               <Controller
-                name="commit"
+                name='paidAmount'
                 control={control}
-                rules={{ required: true }}
+                rules={{
+                  required: 'Pulni kiriting',
+                  min: { value: 0, message: '0 dan katta bo‘lishi kerak' },
+                }}
                 render={({ field }) => (
-                  <div className="flex flex-col gap-y-1">
-                    <textarea
-                      {...field}
-                      placeholder="Qarz sababi"
-                      className="resize-none rounded-md p-2 border border-gray-300"
+                  <>
+                    <input
+                      type='number'
+                      value={(field.value ?? '')
+                        .toString()
+                        .replace(/^0+(?=\d)/, '')}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className='w-full p-1 border border-[#FFCC15] rounded bg-white
+                        [&::-webkit-inner-spin-button]:appearance-none 
+                        [&::-webkit-outer-spin-button]:appearance-none 
+                        [appearance:textfield]'
                     />
-                    {errors.commit && (
-                      <span className="text-red-500">
-                        This field is required
+                    {errors.paidAmount && (
+                      <span className='text-red-500'>
+                        {errors.paidAmount.message?.toString()}
                       </span>
                     )}
-                  </div>
+                  </>
                 )}
               />
+            </div>
 
-              <div className="flex justify-end">
-                <Button type="submit" className="text-blue-950 bg-yellow-500">
-                  Yuborish
-                </Button>
-              </div>
-            </form>
-          </div>
-        </DrawerContent>
-      </Drawer>
+            {/* Client */}
+            <div className='flex flex-col gap-y-1'>
+              <label htmlFor='client' className='text-yellow-400'>
+                Mijoz
+              </label>
+              <Controller
+                name='client'
+                control={control}
+                rules={{ required: 'Xodimni tanlang' }}
+                render={({ field }) => (
+                  <>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className='h-[42px] bg-white rounded-lg border-2 border-[#ffcb15] text-[#1b2b56] text-base font-semibold'>
+                        <SelectValue placeholder='Mijozni tanlang' />
+                      </SelectTrigger>
+                      <SelectContent className='bg-white rounded-lg border border-[#ffcb15] mt-[9px]'>
+                        {client?.map((item) => (
+                          <SelectItem
+                            key={item._id}
+                            value={item._id}
+                            className='text-[#1b2b56] text-base font-semibold'
+                          >
+                            {item.fullName} --- {item.role}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.client && (
+                      <span className='text-red-500'>
+                        {errors.client.message?.toString()}
+                      </span>
+                    )}
+                  </>
+                )}
+              />
+            </div>
 
-      {/* Drawer 2: umumiy summa */}
-      <Drawer open={bottomSheetOpen2} onOpenChange={setBottomSheetOpen2}>
-        <DrawerContent className="bg-blue-950">
-          <div className="h-full px-3 py-4">
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-y-3"
-            >
-              <h2 className="text-white text-xl font-medium">Umumiy summa:</h2>
-
-              {/* phone */}
-              <div className="flex flex-col gap-y-2 mt-5">
-                <label
-                  htmlFor="phone"
-                  className="text-yellow-400 text-base font-semibold"
-                >
-                  Telefon raqami
-                </label>
-                <Controller
-                  name="phone"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <>
-                      <Input
-                        {...field}
-                        placeholder="Telefon raqami"
-                        id="phone"
-                        type="number"
-                      />
-                      {errors.phone && (
-                        <span className="text-red-500">
-                          This field is required
-                        </span>
-                      )}
-                    </>
+            {/* Commit */}
+            <Controller
+              name='commit'
+              control={control}
+              rules={{ required: 'Sababni yozing' }}
+              render={({ field }) => (
+                <div className='flex flex-col gap-y-1'>
+                  <textarea
+                    {...field}
+                    placeholder='Qarz sababi'
+                    className='resize-none h-28 rounded-md p-2 border border-gray-300'
+                  />
+                  {errors.commit && (
+                    <span className='text-red-500'>
+                      {errors.commit.message?.toString()}
+                    </span>
                   )}
-                />
-              </div>
+                </div>
+              )}
+            />
 
-              <div className="flex justify-end">
-                <Button className="text-blue-950 bg-yellow-500" type="submit">
-                  Yuborish
-                </Button>
-              </div>
-            </form>
-          </div>
+            <div className='flex justify-end'>
+              <Button type='submit' className='text-blue-950 bg-yellow-500'>
+                Yuborish
+              </Button>
+            </div>
+          </form>
         </DrawerContent>
       </Drawer>
-    </section>
+
+      {/* Drawer: Price changed */}
+      <Drawer open={openDrawer} onOpenChange={setOpenDrawer}>
+        <DrawerContent className='bg-blue-950'>
+          <form
+            onSubmit={handleSubmit(onPriceChangedSubmit)}
+            className='h-full px-3 py-4 flex flex-col gap-y-3'
+          >
+            <h2 className='text-white text-2xl font-medium'>
+              Umumiy summa: {totalAmount.toLocaleString('uz-UZ')}
+            </h2>
+
+            {/* Phone */}
+            <div className='flex flex-col gap-y-1'>
+              <label htmlFor='phone' className='text-yellow-400'>
+                Telefon raqami
+              </label>
+              <Controller
+                name='phone'
+                control={control}
+                render={({ field }) => (
+                  <>
+                    <Input
+                      {...field}
+                      id='phone'
+                      placeholder='Telefon raqami'
+                      className='text-blue-950 bg-white'
+                    />
+                    {errors.phone && (
+                      <p className='text-red-600 font-semibold text-base'>
+                        {errors.phone.message?.toString()}
+                      </p>
+                    )}
+                  </>
+                )}
+              />
+            </div>
+
+            {/* Commit */}
+            <Controller
+              name='commit'
+              control={control}
+              rules={{ required: 'Izohni yozing!' }}
+              render={({ field }) => (
+                <>
+                  <TextArea
+                    {...field}
+                    placeholder='Shikoyat yoki izoh yozing'
+                    className='bg-white rounded-lg'
+                  />
+                  {errors.commit && (
+                    <p className='text-xs text-red-600'>
+                      {errors.commit.message?.toString()}
+                    </p>
+                  )}
+                </>
+              )}
+            />
+
+            <div className='flex justify-end'>
+              <Button type='submit' className='text-blue-950 bg-yellow-500'>
+                Yuborish
+              </Button>
+            </div>
+          </form>
+        </DrawerContent>
+      </Drawer>
+    </>
   );
 };

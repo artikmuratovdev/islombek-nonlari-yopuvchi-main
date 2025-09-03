@@ -25,6 +25,8 @@ export const AddReport = ({refetch}:{refetch:() => void}) => {
     'SUPPLIER',
     'DOUGHMAKER',
     'DISPATCHER',
+    'BAKER',
+    'DIVIDER'
   ]);
 
   const {

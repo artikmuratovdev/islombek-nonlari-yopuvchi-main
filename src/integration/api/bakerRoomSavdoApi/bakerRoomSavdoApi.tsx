@@ -3,20 +3,23 @@ import { baseApi } from "../baseApi";
 import { PATHS } from "./paths";
 import {
   addBakerRoomBreadSaleRequest,
-  BakerRoomBreadSaleBreadPricesResponse,
   BakerRoomBreadSaleResponse,
+  breadInfo,
 } from "./types";
 
 export const bakerRoomSavdoApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getBakerRoomBreadSales: build.query<
       BakerRoomBreadSaleResponse[],
-      { startDate: string; endDate: string }
+      { id: string; startDate: string; endDate: string }
     >({
       query: (params) => ({
-        url: PATHS.BAKER_ROOM_BREAD_SALES,
+        url: `/baker-room-bread-sale/${params.id}/get-all-sale`,
         method: "GET",
-        params,
+        params:{
+          startDate: params.startDate,
+          endDate: params.endDate
+        },
       }),
       providesTags: [API_TAGS.BAKER_ROOM_BREAD_SALES],
     }),
@@ -31,7 +34,7 @@ export const bakerRoomSavdoApi = baseApi.injectEndpoints({
       providesTags: [API_TAGS.BAKER_ROOM_BREAD_SALES],
     }),
     getBakerRoomBreadSaleBreadPrices: build.query<
-      BakerRoomBreadSaleBreadPricesResponse[],
+      breadInfo[],
       void
     >({
       query: () => ({
@@ -41,8 +44,8 @@ export const bakerRoomSavdoApi = baseApi.injectEndpoints({
       providesTags: [API_TAGS.BAKER_ROOM_BREAD_SALES],
     }),
     addBakerRoomBreadSale: build.mutation<
-      BakerRoomBreadSaleResponse,
-      addBakerRoomBreadSaleRequest
+    {message:string,sale:BakerRoomBreadSaleResponse},
+       addBakerRoomBreadSaleRequest
     >({
       query: ({ id, body }) => ({
         url: `/baker-room-bread-sale/${id}/create-sale`,

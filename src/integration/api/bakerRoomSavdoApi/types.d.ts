@@ -41,23 +41,22 @@ export interface addBakerRoomBreadSaleRequest {
     client?: string;
     paidAmount: number;
     isDebt?: boolean;
-    breadsInfo?: [
-      {
+    breadsInfo?: {
         _id: string;
         title: string;
         breadPrice: number;
         breadSoldPrice: number;
         amount: number;
-      }
-    ];
+      }[];
     commit?: string;
     phone?: string;
   };
 }
 
-export interface BakerRoomBreadSaleBreadPricesResponse {
+export interface breadInfo {
   _id: string;
   title: string;
+  amount: number;
   breadPrice: number;
   breadSoldPrice: number;
 }

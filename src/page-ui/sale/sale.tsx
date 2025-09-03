@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import {
   useDeleteBakerRoomBreadSalesMutation,
   useLazyGetBakerRoomBreadSalesQuery,
+  useProfileQuery,
 } from "@/integration";
 import {
   AlertDialog,
@@ -41,6 +42,7 @@ const generateRandomCode = () => {
 export const Sale = () => {
   const navigate = useNavigate();
 
+  const {data:me} = useProfileQuery({});
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const [randomCode, setRandomCode] = useState("");
@@ -54,7 +56,8 @@ export const Sale = () => {
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
     getSupplierProducts({
-      startDate: "2023-01-01",
+      id: me?.bakerRoom as string,
+      startDate: today,
       endDate: today,
     });
   }, []);
@@ -71,14 +74,16 @@ export const Sale = () => {
       request: () => deleteBakerRoomBreadSales(id),
       onSuccess: () => {
         getSupplierProducts({
+          id: me?.bakerRoom as string,
           startDate: "2023-01-01",
           endDate: new Date().toISOString().split("T")[0],
         });
         setDeleteOpen(false);
-        toast.success("Muvaffaqiyatli o'chirildi.");
+        toast.success("Sotuv muvaffaqiyatli o'chirish so'rovi yuborildi.");
       },
       onError: (error) => {
         getSupplierProducts({
+          id: me?.bakerRoom as string,
           startDate: "2023-01-01",
           endDate: new Date().toISOString().split("T")[0],
         });
@@ -110,6 +115,7 @@ export const Sale = () => {
             fetchDate={true}
             onSelectDate={(data) => {
               getSupplierProducts({
+                id: me?.bakerRoom as string,
                 startDate: data.startDate,
                 endDate: data.endDate,
               });

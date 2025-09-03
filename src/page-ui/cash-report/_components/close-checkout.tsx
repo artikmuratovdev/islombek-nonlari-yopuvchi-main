@@ -12,6 +12,7 @@ import { useCloseCashMutation } from "@/integration/api/expenseApi";
 import { MoneyFormatter } from "@/utils/money-formatter";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import toast, { Toaster } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 
 export const CloseCheckout = () => {
@@ -22,6 +23,8 @@ export const CloseCheckout = () => {
     'SUPPLIER',
     'DOUGHMAKER',
     'DISPATCHER',
+    'BAKER',
+    'DIVIDER'
   ]);
   const [open, setOpen] = useState(false);
   const [closeCash] = useCloseCashMutation();
@@ -51,17 +54,18 @@ export const CloseCheckout = () => {
       }
       const sentData = {bakerRoomId,...data}
       sentData.amount = Number(data.amount) 
-      const response = await closeCash(sentData).unwrap();
-      console.log(response)
+      const {message} = await closeCash(sentData).unwrap();
+      toast.success(message)
       reset();
       setOpen(false);
-    } catch (error) {
-      console.log(error);
+    } catch (error : any) {
+      toast.error(error.message);
     }
   };
 
   return (
     <div>
+      <Toaster />
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger>
           <div className='text-[#1C2C57] fixed bottom-[80px] left-[20px] right-[20px]'>
@@ -155,7 +159,7 @@ export const CloseCheckout = () => {
                 render={({ field }) => (
                   <SelectUser
                     className='bg-white'
-                    userData={getUsers}
+                    userData={getUsers?.filter((user) => user.role === 'DRIVER' || user.role === 'ADMIN')}
                     setId={field.onChange}
                     title='Xodim tanlash'
                     isLoading={getUsersLoading}
