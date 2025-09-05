@@ -34,8 +34,8 @@ export const OrderApi = baseApi.injectEndpoints({
       providesTags: [API_TAGS.ORDER],
     }),
     editOrder : build.mutation<CreateOrdersResponse, EditOrderRequest>({
-      query: ({id, body}) => ({
-        url: PATHS.EDIT_ORDER+id,
+      query: ({id, bakerRoomId , body}) => ({
+        url: PATHS.BASE_ORDER + bakerRoomId + PATHS.EDIT_ORDER+id,
         method: 'PATCH',
         body
       }),

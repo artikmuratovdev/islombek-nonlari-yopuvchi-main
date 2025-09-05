@@ -12,12 +12,10 @@ import { FaRegEdit } from 'react-icons/fa';
 import { SelectUser } from '@/components';
 import { useGetUsersQuery } from '@/integration/api';
 import { useEditExpenseMutation } from '@/integration/api/expenseApi';
+import toast from 'react-hot-toast';
+import { useHandleRequest } from '@/hooks';
 
-export const EditExpense = ({
-  amount,
-}: {
-  amount: number;
-}) => {
+export const EditExpense = ({ amount }: { amount: number }) => {
   const {
     control,
     handleSubmit,
@@ -339,8 +337,13 @@ export const EditReport = ({
 
   const setId = useState('')[1];
   const [open, setOpen] = useState(false);
+  const handleRequest = useHandleRequest();
 
-  const onSubmit = async (data: { sum: string ,user:string,reason:string}): Promise<void> => {
+  const onSubmit = async (data: {
+    sum: string;
+    user: string;
+    reason: string;
+  }): Promise<void> => {
     try {
       const sum = parseInt(data.sum);
       if (isNaN(sum)) {
@@ -351,27 +354,37 @@ export const EditReport = ({
         id: editId,
         body: {
           expense_type,
-          amount: Number(sum)* 1000,
+          amount: Number(sum) * 1000,
           fromUser: fromUser,
           toUser: selectedUser,
           reason: data.reason,
         },
       });
-      const res = await editExpense({
-        id: editId,
-        body: {
-          expense_type,
-          amount: Number(sum)* 1000,
-          fromUser: fromUser as string,
-          toUser: selectedUser,
-          reason: data.reason,
+
+      await handleRequest({
+        request: async () =>
+          await editExpense({
+            id: editId,
+            body: {
+              expense_type,
+              amount: Number(sum) * 1000,
+              fromUser: fromUser as string,
+              toUser: selectedUser,
+              reason: data.reason,
+            },
+          }),
+        onSuccess: (req: any) => {
+          toast.success(req.message);
+          reset();
+          setOpen(false);
         },
-      }).unwrap();
-      reset();
-      console.log(res);
-      setOpen(false);
-    } catch (error) {
-      console.log(error);
+        onError: (err: any) => {
+          console.log(err.message);
+          toast.error(err.message);
+        },
+      });
+    } catch (err: any) {
+      console.log(err.error.data.message || 'Xatolik yuz berdi');
     }
   };
   return (

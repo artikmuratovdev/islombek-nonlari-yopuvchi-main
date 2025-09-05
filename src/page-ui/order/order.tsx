@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/sheet';
 import { CLOSER_ORDER_FORM_LIST } from '@/constants';
 import {
+  RootState,
   useEditOrderMutation,
   useGetBreadPriceQuery,
   useGetOrderQuery,
@@ -21,6 +22,7 @@ import { Controller, useForm } from 'react-hook-form';
 import toast, { Toaster } from 'react-hot-toast';
 import { FaPlus } from 'react-icons/fa';
 import { IoArrowBack } from 'react-icons/io5';
+import { useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 export const Order = () => {
@@ -115,10 +117,13 @@ export const Order = () => {
     }
   }, [open, getOrder, getBread]);
 
+  const bakerRoomId = useSelector((state:RootState) => state.expense.bakerRoomId)
+
   const onSubmit = async (data: any) => {
     const paid = Number(data.paidAmount.replace(/\s/g, ''));
     const postedData = {
       id: id as string,
+      bakerRoomId,
       body: {
         paidAmount: paid,
         breadsInfo: breads.filter((bread) => bread.amount > 0),

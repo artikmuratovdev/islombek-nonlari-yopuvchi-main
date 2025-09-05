@@ -66,6 +66,7 @@ interface GetOrdersRequest {
 
 interface EditOrderRequest {
   id: string;
+  bakerRoomId:string;
   body: {
     paidAmount : number
     breadsInfo : BreadsInfo[]
