@@ -15,7 +15,14 @@ import { Controller, useForm } from "react-hook-form";
 import toast, { Toaster } from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 
-export const CloseCheckout = () => {
+interface FormValues {
+  amount: string;
+  fromUser: string;
+  toUser: string;
+  reason: string;
+}
+
+export const CloseCheckout = ({refetch}:{refetch:() => void}) => {
   const { data: getUsers, isLoading: getUsersLoading } = useGetUsersQuery([
     'CEO',
     'ADMIN',
@@ -27,7 +34,7 @@ export const CloseCheckout = () => {
     'DIVIDER'
   ]);
   const [open, setOpen] = useState(false);
-  const [closeCash] = useCloseCashMutation();
+  const [closeCash, {isLoading}] = useCloseCashMutation();
 
   const { balance, bakerRoomId } = useSelector(
     (state: RootState) => state.expense
@@ -38,13 +45,7 @@ export const CloseCheckout = () => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm({
-    defaultValues: {
-      amount: 0,
-      toUser: '',
-      fromUser: '',
-      reason: '',
-    },
+  } = useForm<FormValues>({
   });
 
   const onSubmit = async (data: any): Promise<void> => {
@@ -56,10 +57,11 @@ export const CloseCheckout = () => {
       sentData.amount = Number(data.amount) 
       const {message} = await closeCash(sentData).unwrap();
       toast.success(message)
-      reset();
+      refetch()
+      reset({amount: '', fromUser: '', toUser: '', reason: ''});
       setOpen(false);
     } catch (error : any) {
-      toast.error(error.message);
+      toast.error(error.data.message);
     }
   };
 
@@ -87,14 +89,15 @@ export const CloseCheckout = () => {
             <SheetHeader className='border-2 border-[#FFCC15] rounded-[12px] p-[15px]'>
               <SheetTitle className='text-white font-[600] text-left'>
                 Umumiy balans: {MoneyFormatter(String(balance))}
-
               </SheetTitle>
-              <label
-                htmlFor='sum'
-                className='text-start text-[12px] text-[#FFCC15] font-[600]'
-              >
-                Berilgan pul
-              </label>
+              <div className='flex items-center gap-2'>
+                <label
+                  htmlFor='amount'
+                  className='text-start text-[12px] text-[#FFCC15] font-[600]'
+                >
+                  Berilgan pul
+                </label>
+              </div>
               <Controller
                 name='amount'
                 control={control}
@@ -120,18 +123,22 @@ export const CloseCheckout = () => {
                 )}
               />
               {errors.amount && (
-                <span className='text-red-500'>{errors.amount.message}</span>
+                <span className='text-red-500 text-start'>{errors.amount.message}</span>
               )}
 
-              <label
-                htmlFor=''
-                className='text-start text-[12px] text-[#FFCC15] font-[600]'
-              >
-                Bergan xodim
-              </label>
+              <div className='flex items-center gap-2 mt-2'>
+                <label
+                  htmlFor='fromUser'
+                  className='text-start text-[12px] text-[#FFCC15] font-[600]'
+                >
+                  Bergan xodim
+                </label>
+              </div>
               <Controller
                 name='fromUser'
                 control={control}
+                rules={{
+                  required: 'Xodimni tanlash shart!'}}
                 render={({ field }) => (
                   <SelectUser
                     className='bg-white'
@@ -144,18 +151,22 @@ export const CloseCheckout = () => {
                 )}
               />
               {errors.fromUser && (
-                <span className='text-red-500'>{errors.fromUser.message}</span>
+                <span className='text-red-500 text-start'>{errors.fromUser.message}</span>
               )}
 
-              <label
-                htmlFor=''
-                className='text-start text-[12px] text-[#FFCC15] font-[600]'
-              >
-                Olgan xodim
-              </label>
+              <div className='flex items-center gap-2 mt-2'>
+                <label
+                  htmlFor='toUser'
+                  className='text-start text-[12px] text-[#FFCC15] font-[600]'
+                >
+                  Olgan xodim
+                </label>
+              </div>
               <Controller
                 name='toUser'
                 control={control}
+                rules={{
+                  required: 'Xodimni tanlash shart!'}}
                 render={({ field }) => (
                   <SelectUser
                     className='bg-white'
@@ -168,15 +179,17 @@ export const CloseCheckout = () => {
                 )}
               />
               {errors.toUser && (
-                <span className='text-red-500'>{errors.toUser.message}</span>
+                <span className='text-red-500 text-start'>{errors.toUser.message}</span>
               )}
 
-              <label
-                htmlFor='reason'
-                className='text-start text-[12px] text-[#FFCC15] font-[600]'
-              >
-                Sababi
-              </label>
+              <div className='flex items-center gap-2 mt-2'>
+                <label
+                  htmlFor='reason'
+                  className='text-start text-[12px] text-[#FFCC15] font-[600]'
+                >
+                  Sababi
+                </label>
+              </div>
               <Controller
                 name='reason'
                 control={control}
@@ -184,19 +197,20 @@ export const CloseCheckout = () => {
                   <input
                     type='text'
                     className='border border-[#FFCC15] outline-none p-1 rounded-[8px]'
+                    maxLength={255}
                     {...field}
                   />
                 )}
               />
               {errors.reason && (
-                <span className='text-red-500'>{errors.reason.message}</span>
+                <span className='text-red-500 text-start'>{errors.reason.message}</span>
               )}
 
               <Button
                 variant={'yellow'}
                 className='text-[16px] font-[600] ml-auto mt-[10px] text-[#1C2C57]'
                 type='submit'
-                // disabled={isLoading}
+                disabled={isLoading}
               >
                 Yuborish
               </Button>

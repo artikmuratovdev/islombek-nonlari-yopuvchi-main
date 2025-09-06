@@ -133,7 +133,7 @@ export const PriceTable = ({ item, idx, type, setBreads }: Props) => {
 
             {/* Editable amount input */}
             <input
-              type='number'
+              type='text'
               min={0}
               value={item.amount}
               onChange={e => {

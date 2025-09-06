@@ -7,14 +7,17 @@ import { ForWork, Salary } from "./_components";
 import { CloseCheckout } from "./_components/close-checkout";
 import { Title } from "@/components";
 import { AddReport } from "./_components/add-report";
-import { RootState } from "@/integration";
+import { RootState, useGetBakerRoomQuery } from "@/integration";
 import { useGetAllExpenseQuery } from "@/integration/api/expenseApi";
 import { GetExpensesResponse } from "@/integration/api/expenseApi/types";
 import { useSelector } from "react-redux";
 
 export const CashReport = () => {
-  const {bakerRoomId,balance} = useSelector((state: RootState) => state.expense)
+  const {bakerRoomId} = useSelector((state: RootState) => state.expense)
   const {data:expenses, refetch} = useGetAllExpenseQuery(bakerRoomId as string)
+  const { data: baker, refetch: refetchBaker } = useGetBakerRoomQuery({
+      id: bakerRoomId.toString(),
+    });
 
   const for_work = expenses?.filter(expense => (expense.expense_type === 'for_work' && expense))
   const for_salary = expenses?.filter(expense => (expense.expense_type === 'for_salary' && expense))
@@ -38,7 +41,7 @@ export const CashReport = () => {
       <div className="mt-[70px]">
         <div className="rounded-[8px] bg-white p-3 px-5 border-[1px] border-[#FFCC15] flex items-center justify-between text-[16px] text-[#1C2C57] font-[600]">
           <p>Balance</p>
-          <p>{MoneyFormatter(String(balance as number))}</p>
+          <p>{MoneyFormatter(String(baker?.bakerRoom.balance as number))}</p>
         </div>
       </div>
 
@@ -60,7 +63,7 @@ export const CashReport = () => {
       </Tabs>
 
       <AddReport refetch={refetch} />
-      <CloseCheckout />
+      <CloseCheckout refetch={refetchBaker} />
     </div>
   );
 };
