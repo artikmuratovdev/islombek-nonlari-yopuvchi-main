@@ -129,7 +129,7 @@ export const Sale = () => {
               onClick={() => navigate(`/sotuv/${item._id}`)}
               className="flex justify-between items-center bg-white rounded-lg border-2 border-yellow-500 py-3 px-2"
             >
-              <h3 className="text-red-700 text-sm font-bold">
+              <h3 className={`${item.isDebt ? 'text-red-700' : 'text-green-700'} text-sm font-bold`}>
                 {item?.totalAmount}
               </h3>
               <div className="flex items-center gap-x-3">

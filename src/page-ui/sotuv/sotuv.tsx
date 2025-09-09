@@ -7,8 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 export const Sotuv = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  console.log(id);
-  const { data: product } = useGetBakerRoomBreadSaleQuery({ id: id as string });
+  const { data: product } = useGetBakerRoomBreadSaleQuery({ id: id as string },{skip:!id});
 
   return (
     <section>
@@ -52,8 +51,8 @@ export const Sotuv = () => {
           <h3 className="text-yellow-400 text-lg font-semibold">
             {product?.createdAt.slice(0, 10)} {product?.createdAt.slice(11, 16)}
           </h3>
-          <div className="border-2 border-yellow-500 px-4 py-3 rounded-xl flex justify-between items-center">
-            <h3 className=" text-yellow-400 text-base font-semibold mb-5">
+          <div className="border-2 border-yellow-500 bg-white px-4 py-3 rounded-xl flex justify-between items-center">
+            <h3 className=" text-yellow-500  text-base font-semibold mb-5">
               {product?.commit}
             </h3>
           </div>

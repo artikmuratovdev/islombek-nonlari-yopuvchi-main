@@ -135,17 +135,18 @@ export const SotuvEdit = () => {
       };
     });
 
-    handleRequest({
-      request: () =>
-        edit({
+    await handleRequest({
+      request: async () =>
+        await edit({
           bakerRoomId: me?.bakerRoom as string,
           id: id as string,
           body: {
             breadsInfo: productsArray,
           },
         }),
-      onSuccess: () => {
-        toast.success("Muvaffaqiyatli qo'shildi");
+      onSuccess: (data : any) => {
+        toast.success(data.data.message || "Muvaffaqiyatli qo'shildi");
+        reset();
         navigate("/sotuv");
       },
       onError: (err) => {
@@ -154,12 +155,7 @@ export const SotuvEdit = () => {
         );
       },
     });
-
-    console.log("Yuboriladigan ma'lumot:", {
-      breadsInfo: productsArray,
-    });
-
-    reset();
+    
   };
 
   return (

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import toast, { Toaster } from 'react-hot-toast';
+import { useHandleRequest } from '@/hooks';
 
 type FormValues = {
   breadsInfo: breadInfo[];
@@ -45,6 +46,7 @@ export const AddSotuv = () => {
   const navigate = useNavigate();
   const { totalAmount } = useSelector((state: RootState) => state.sotuv);
   const { bakerRoomId } = useSelector((state: RootState) => state.expense);
+  const handleRequest = useHandleRequest();
 
   const {
     control,
@@ -92,19 +94,27 @@ export const AddSotuv = () => {
 
     data.breadsInfo = data.breadsInfo.filter((el) => el.amount !== 0);
 
-    const { message } = await addSale({
-      id: bakerRoomId,
-      body: {
-        breadsInfo: data.breadsInfo,
-        isDebt: false,
-        paidAmount: totalAmount,
+    await handleRequest({
+      request: async () => {
+        const request = await addSale({
+          id: bakerRoomId,
+          body: {
+            breadsInfo: data.breadsInfo,
+            isDebt: false,
+            paidAmount: totalAmount,
+          },
+        })
+        return request
       },
-    }).unwrap();
-
-    if (message) {
-      toast.success(message, { duration: 3000 });
-      navigate('/sotuv');
-    }
+      onSuccess: (data:any) => {
+        toast.success(data.data.message || "Muvaffaqiyatli qo'shildi");
+        navigate('/sotuv');
+      },
+      onError: (err:any) => {
+        console.log(err.message);
+        toast.error(err.message || "Xatolik yuz berdi");
+      }
+    })
   };
 
   const onDebtSubmit = async (data: FormValues) => {
@@ -115,21 +125,29 @@ export const AddSotuv = () => {
 
     data.breadsInfo = data.breadsInfo.filter((el) => el.amount !== 0);
 
-    const { message } = await addSale({
-      id: bakerRoomId,
-      body: {
-        breadsInfo: data.breadsInfo,
-        isDebt: true,
-        client: data.client,
-        paidAmount: totalAmount,
-        commit: data.commit,
+    await handleRequest({
+      request: async () => {
+        const request = await addSale({
+          id: bakerRoomId,
+          body: {
+            breadsInfo: data.breadsInfo,
+            isDebt: true,
+            client: data.client,
+            paidAmount: totalAmount,
+            commit: data.commit,
+          },
+        })
+        return request
       },
-    }).unwrap();
-
-    if (message) {
-      toast.success(message, { duration: 3000 });
-      navigate('/sotuv');
-    }
+      onSuccess: (data:any) => {
+        toast.success(data.data.message || "Muvaffaqiyatli qo'shildi");
+        navigate('/sotuv');
+      },
+      onError: (err:any) => {
+        console.log(err.message);
+        toast.error(err.message || "Xatolik yuz berdi");
+      }
+    })
   };
 
   const onPriceChangedSubmit = async (data: FormValues) => {
@@ -148,15 +166,22 @@ export const AddSotuv = () => {
     data.breadsInfo = data.breadsInfo.filter((el) => el.amount !== 0);
     data.paidAmount = totalAmount;
 
-    const { message } = await addSale({
-      id: bakerRoomId,
-      body: data,
-    }).unwrap();
-
-    if (message) {
-      toast.success(message, { duration: 3000 });
-      navigate('/sotuv');
-    }
+    await handleRequest({
+      request: async () => {
+        const request = await addSale({
+          id: bakerRoomId,
+          body: data,
+        })
+        return request
+      },
+      onSuccess: (data:any) => {
+        toast.success(data.data.message || "Muvaffaqiyatli qo'shildi");
+        navigate('/sotuv');
+      },
+      onError: (err:any) => {
+        toast.error(err.message || "Xatolik yuz berdi");
+      }
+    })
   };
 
   return (
