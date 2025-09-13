@@ -1,11 +1,13 @@
 export enum Role {
   CEO = "CEO",
   ADMIN = "ADMIN",
-  BAKER = "BAKER",
-  DRIVER = "DRIVER",
-  SUPPLIER = "SUPPLIER",
-  DIVIDER = "DIVIDER",
-  CUSTOMER = "CUSTOMER",
-  DOUGHMAKER = "DOUGHMAKER",
-  DISPETCHER = "DISPETCHER",
+  BAKER = "BAKER", // Yopuvchi
+  DRIVER = "DRIVER", // Haydovchi
+  SUPPLIER = "SUPPLIER", // Ta'minotchi
+  DIVIDER = "DIVIDER", // Parkashchi
+  DIVIDER_TABLET = "DIVIDER_TABLET", // Parkashchi planshet
+  BAKER_TABLET = "BAKER_TABLET", // Yopuvchi planshet
+  DOUGHMAKER = "DOUGHMAKER", // Xamirchi
+  DISPATCHER = "DISPATCHER",
+  CLIENT = "CLIENT",
 }
