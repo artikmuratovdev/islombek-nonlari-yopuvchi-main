@@ -38,15 +38,19 @@ const Login = () => {
       request: async () => {
         return await login(data).unwrap();
       },
-      onSuccess: (response:any) => {
-        useStorage.setCredentials({
-          accessToken: response?.token,
-          refreshToken: response?.refreshToken,
-        });
-        toast.success("Tizimga muvaffaqiyatli kirdingiz!");
-        setTimeout(() => navigate("/"), 1000);
+      onSuccess: (response: any) => {
+        if (response?.role === "BAKER_TABLET") {
+          useStorage.setCredentials({
+            accessToken: response?.token,
+            refreshToken: response?.refreshToken,
+          });
+          toast.success("Tizimga muvaffaqiyatli kirdingiz!");
+          setTimeout(() => navigate("/"), 1000);
+        } else {
+          toast.error("Bu tizimda sizga ruxsat yo'q");
+        }
       },
-      onError: (error:any) => {
+      onError: (error: any) => {
         toast.error(error?.data?.message || "Login failed");
         reset();
       },

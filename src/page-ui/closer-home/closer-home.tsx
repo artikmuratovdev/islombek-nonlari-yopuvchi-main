@@ -132,7 +132,7 @@ export const CloserHome = () => {
           <TbMessageReport size={25} />
         </Link>
 
-        <Link to="/message" aria-label="Xabarlar">
+        <Link to="/messages" aria-label="Xabarlar">
           <TiMessages size={25} />
         </Link>
       </div>
