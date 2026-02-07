@@ -27,8 +27,19 @@ export const Profile = () => {
   const [uploadImage] = useUploadImageMutation();
   const [user, setUser] = useState<ProfileResponse>();
   const navigate = useNavigate();
-const {bakerRoomId} = useSelector((state: RootState) => state.expense);
-  const { data: getExpenses, isLoading } = useGetAllExpenseQuery(bakerRoomId as string);
+  const { bakerRoomId } = useSelector((state: RootState) => state.expense);
+
+  // bakerRoomId dan to'g'ri ID ni olish (array bo'lsa birinchi element, string bo'lsa o'zi)
+  const roomId =
+    profile?.bakerRoom ||
+    (Array.isArray(bakerRoomId) ? bakerRoomId[0] : bakerRoomId);
+
+  const { data: getExpenses, isLoading } = useGetAllExpenseQuery(
+    roomId as string,
+    {
+      skip: !roomId,
+    },
+  );
 
   useEffect(() => {
     if (isError) {
@@ -42,7 +53,7 @@ const {bakerRoomId} = useSelector((state: RootState) => state.expense);
   }, [profile, isError, navigate]);
 
   const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
@@ -63,7 +74,10 @@ const {bakerRoomId} = useSelector((state: RootState) => state.expense);
   };
 
   const balance = getExpenses?.reduce((acc, cur) => {
-    if ((cur?.fromUser as ProfileResponse)._id === profile?._id && !cur?.reason) {
+    if (
+      (cur?.fromUser as ProfileResponse)._id === profile?._id &&
+      !cur?.reason
+    ) {
       return acc + cur?.amount;
     }
 
@@ -117,7 +131,8 @@ const {bakerRoomId} = useSelector((state: RootState) => state.expense);
                 {getExpenses
                   ?.filter(
                     (item) =>
-                      (item?.fromUser as ProfileResponse)._id === profile?._id && !item?.reason
+                      (item?.fromUser as ProfileResponse)._id ===
+                        profile?._id && !item?.reason,
                   )
                   .map((item) => (
                     <div key={item?._id}>
