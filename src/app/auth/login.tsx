@@ -79,7 +79,10 @@ const Login = () => {
   };
 
   return (
-    <div className="text-center px-4 pt-16">
+    <div className="text-center px-4 pt-8">
+      <h1 className="text-center text-white text-3xl font-bold  leading-[44.61px] tracking-wide">
+        Novvoyxona <br /> (yopuvchi)
+      </h1>
       <img
         src="/logo 1.png"
         alt="logo"
