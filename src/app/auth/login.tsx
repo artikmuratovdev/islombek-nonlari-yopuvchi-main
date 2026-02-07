@@ -42,7 +42,7 @@ const Login = () => {
   // Profile data kelgandan keyin role ni tekshirish
   useEffect(() => {
     if (profileData && shouldFetchProfile) {
-      if (profileData.role === "BAKER_TABLET") {
+      if (profileData.role === "BAKER") {
         toast.success("Tizimga muvaffaqiyatli kirdingiz!");
         setShouldFetchProfile(false);
         setTimeout(() => {
@@ -51,7 +51,7 @@ const Login = () => {
         }, 500);
       } else {
         useStorage.removeCredentials();
-        toast.error("Bu tizimda sizga ruxsat yo'q");
+        toast.error("Bu tizimda sizga ruxsat yo'q. Faqat BAKER roli uchun!");
         setShouldFetchProfile(false);
       }
     }
@@ -81,7 +81,7 @@ const Login = () => {
   return (
     <div className="text-center px-4 pt-8">
       <h1 className="text-center text-white text-3xl font-bold  leading-[44.61px] tracking-wide">
-        Novvoyxona <br /> (yopuvchi)
+        Novvoyxona <br /> (BAKER)
       </h1>
       <img
         src="/logo 1.png"
