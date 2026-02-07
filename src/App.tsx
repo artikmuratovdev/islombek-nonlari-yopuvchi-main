@@ -13,7 +13,7 @@ import {
   Sale,
   Sotuv,
   SotuvEdit,
-  AddSotuv,
+  AddSotuv
 } from "./page-ui";
 import { Toaster } from "react-hot-toast";
 import Complaints from "./app/complaints/complaints";
