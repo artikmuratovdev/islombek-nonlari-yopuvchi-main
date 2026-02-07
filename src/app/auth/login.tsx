@@ -32,7 +32,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const handleRequest = useHandleRequest();
-  const token = useStorage.getTokens()?.accessToken;
   const [shouldFetchProfile, setShouldFetchProfile] = useState(false);
 
   const { data: profileData, isLoading: profileLoading } = useProfileQuery(
@@ -40,17 +39,16 @@ const Login = () => {
     { skip: !shouldFetchProfile },
   );
 
-  if (token && !shouldFetchProfile) {
-    navigate("/");
-  }
-
   // Profile data kelgandan keyin role ni tekshirish
   useEffect(() => {
     if (profileData && shouldFetchProfile) {
       if (profileData.role === "BAKER_TABLET") {
         toast.success("Tizimga muvaffaqiyatli kirdingiz!");
         setShouldFetchProfile(false);
-        setTimeout(() => navigate("/"), 1000);
+        setTimeout(() => {
+          navigate("/", { replace: true });
+          window.location.reload();
+        }, 500);
       } else {
         useStorage.removeCredentials();
         toast.error("Bu tizimda sizga ruxsat yo'q");

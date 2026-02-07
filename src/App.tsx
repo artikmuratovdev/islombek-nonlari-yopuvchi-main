@@ -1,7 +1,8 @@
-import { Suspense, lazy } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Suspense, lazy, useEffect } from "react";
+import { Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { PageLayout } from "./layout";
 import Login from "./app/auth/login";
+import { useStorage } from "./utils";
 import {
   InOven,
   NewOrder,
@@ -25,6 +26,21 @@ const OrderHome = lazy(() => import("./app/order/order"));
 const Cash = lazy(() => import("./app/cash/cash"));
 
 const App = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = useStorage.getTokens()?.accessToken;
+
+  useEffect(() => {
+    // Agar token yo'q bo'lsa va login sahifasida emas bo'lsa, login ga yo'naltirish
+    if (!token && location.pathname !== "/login") {
+      navigate("/login", { replace: true });
+    }
+    // Agar token bor va login sahifasida bo'lsa, home ga yo'naltirish
+    else if (token && location.pathname === "/login") {
+      navigate("/", { replace: true });
+    }
+  }, [token, location.pathname, navigate]);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Toaster />
