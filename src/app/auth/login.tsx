@@ -3,12 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormData } from "./types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { useLoginMutation } from "@/integration";
+import { useLoginMutation, useProfileQuery } from "@/integration";
 import { useHandleRequest } from "@/hooks";
 import toast from "react-hot-toast";
 import { useStorage } from "@/utils";
+
+interface LoginResponse {
+  token: string;
+  refreshToken: string;
+}
 
 const Login = () => {
   const {
@@ -28,30 +33,48 @@ const Login = () => {
   const [login, { isLoading }] = useLoginMutation();
   const handleRequest = useHandleRequest();
   const token = useStorage.getTokens()?.accessToken;
+  const [shouldFetchProfile, setShouldFetchProfile] = useState(false);
 
-  if (token) {
+  const { data: profileData, isLoading: profileLoading } = useProfileQuery(
+    {},
+    { skip: !shouldFetchProfile },
+  );
+
+  if (token && !shouldFetchProfile) {
     navigate("/");
   }
+
+  // Profile data kelgandan keyin role ni tekshirish
+  useEffect(() => {
+    if (profileData && shouldFetchProfile) {
+      if (profileData.role === "BAKER_TABLET") {
+        toast.success("Tizimga muvaffaqiyatli kirdingiz!");
+        setShouldFetchProfile(false);
+        setTimeout(() => navigate("/"), 1000);
+      } else {
+        useStorage.removeCredentials();
+        toast.error("Bu tizimda sizga ruxsat yo'q");
+        setShouldFetchProfile(false);
+      }
+    }
+  }, [profileData, shouldFetchProfile, navigate]);
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     await handleRequest({
       request: async () => {
         return await login(data).unwrap();
       },
-      onSuccess: (response: any) => {
-        if (response?.role === "BAKER_TABLET") {
-          useStorage.setCredentials({
-            accessToken: response?.token,
-            refreshToken: response?.refreshToken,
-          });
-          toast.success("Tizimga muvaffaqiyatli kirdingiz!");
-          setTimeout(() => navigate("/"), 1000);
-        } else {
-          toast.error("Bu tizimda sizga ruxsat yo'q");
-        }
+      onSuccess: (response: LoginResponse) => {
+        // Tokenni saqlash
+        useStorage.setCredentials({
+          accessToken: response?.token,
+          refreshToken: response?.refreshToken,
+        });
+        // Profile so'rovini yoqish
+        setShouldFetchProfile(true);
       },
-      onError: (error: any) => {
-        toast.error(error?.data?.message || "Login failed");
+      onError: (error: { data?: { message?: string } }) => {
+        toast.error(error?.data?.message || "Login muvaffaqiyatsiz");
         reset();
       },
     });
@@ -117,10 +140,10 @@ const Login = () => {
 
         <Button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || profileLoading}
           className="w-full py-3 text-xl text-[#1C2C57] font-bold bg-yellow-400"
         >
-          {isLoading ? "Loading..." : "Login"}
+          {isLoading || profileLoading ? "Loading..." : "Login"}
         </Button>
       </form>
     </div>
