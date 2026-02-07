@@ -3,14 +3,30 @@ import { Breads, Cashbacks } from "./_components";
 import { Link } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
 import { Title } from "@/components";
-import { RootState, useGetNotificationsQuery } from "@/integration";
+import {
+  RootState,
+  useGetNotificationsQuery,
+  useProfileQuery,
+} from "@/integration";
 import { socket } from "@/utils";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
 export const CloserNotification = () => {
-  const {bakerRoomId} = useSelector((state: RootState) => state.expense)
-  const { data: getNotifications, refetch } = useGetNotificationsQuery(bakerRoomId as string);
+  const { data: me } = useProfileQuery({});
+  const { bakerRoomId } = useSelector((state: RootState) => state.expense);
+
+  // bakerRoomId dan to'g'ri ID ni olish (array bo'lsa birinchi element, string bo'lsa o'zi)
+  const roomId =
+    me?.bakerRoom ||
+    (Array.isArray(bakerRoomId) ? bakerRoomId[0] : bakerRoomId);
+
+  const { data: getNotifications, refetch } = useGetNotificationsQuery(
+    roomId as string,
+    {
+      skip: !roomId,
+    },
+  );
 
   useEffect(() => {
     const handleNotification = () => refetch();
@@ -20,12 +36,11 @@ export const CloserNotification = () => {
     };
   }, []);
 
-
   return (
     <>
       <div className="border-b-2 border-[#FFCC15] rounded-b-[30px] bg-[#1C2C57] p-[12px] pt-[20px] -ml-[20px] fixed top-0 w-full">
         <div className="flex justify-between items-center">
-          <Link to={'/'}>
+          <Link to={"/"}>
             <IoArrowBack
               size={25}
               className="bg-[#FFCC15] text-[#1C2C57] rounded-full p-1 shrink-0 cursor-pointer"

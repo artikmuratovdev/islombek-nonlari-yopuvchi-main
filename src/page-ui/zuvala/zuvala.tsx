@@ -18,7 +18,10 @@ import { TimeAgo } from "./_components";
 
 export const Zuvala = () => {
   const { data: me } = useProfileQuery({});
-  const { data: dough } = useGetDoughsQuery({ id: me?.bakerRoom as string });
+  const { data: dough } = useGetDoughsQuery(
+    { id: me?.bakerRoom as string },
+    { skip: !me?.bakerRoom },
+  );
   const [patchDoughs] = usePatchDoughsMutation({});
   const handleRequest = useHandleRequest();
 

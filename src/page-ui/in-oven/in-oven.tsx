@@ -18,9 +18,10 @@ export const InOven = () => {
   const [open, setOpen] = useState(false);
   const [bakeBreadId, setBakeBreadId] = useState("");
   const { data: profile } = useProfileQuery({});
-  const { data: breads } = useGetBakerRoomIdInOvenBreadsQuery({
-    id: profile?.bakerRoom as string,
-  });
+  const { data: breads } = useGetBakerRoomIdInOvenBreadsQuery(
+    { id: profile?.bakerRoom as string },
+    { skip: !profile?.bakerRoom },
+  );
   const [bakeBread] = usePatchBakerRoomIdInOvenBreadsMutation({});
   const handleRequest = useHandleRequest();
   const {

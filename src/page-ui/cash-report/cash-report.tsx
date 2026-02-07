@@ -7,22 +7,39 @@ import { ForWork, Salary } from "./_components";
 import { CloseCheckout } from "./_components/close-checkout";
 import { Title } from "@/components";
 import { AddReport } from "./_components/add-report";
-import { RootState, useGetBakerRoomQuery } from "@/integration";
+import {
+  RootState,
+  useGetBakerRoomQuery,
+  useProfileQuery,
+} from "@/integration";
 import { useGetAllExpenseQuery } from "@/integration/api/expenseApi";
 import { GetExpensesResponse } from "@/integration/api/expenseApi/types";
 import { useSelector } from "react-redux";
 
 export const CashReport = () => {
-  const {bakerRoomId} = useSelector((state: RootState) => state.expense)
-  const {data:expenses, refetch} = useGetAllExpenseQuery(bakerRoomId as string)
-  const { data: baker, refetch: refetchBaker } = useGetBakerRoomQuery({
-      id: bakerRoomId.toString(),
-    });
+  const { data: me } = useProfileQuery({});
+  const { bakerRoomId } = useSelector((state: RootState) => state.expense);
 
-  const for_work = expenses?.filter(expense => (expense.expense_type === 'for_work' && expense))
-  const for_salary = expenses?.filter(expense => (expense.expense_type === 'for_salary' && expense))
-  
-  console.log(expenses);
+  // bakerRoomId dan to'g'ri ID ni olish (array bo'lsa birinchi element, string bo'lsa o'zi)
+  const roomId =
+    me?.bakerRoom ||
+    (Array.isArray(bakerRoomId) ? bakerRoomId[0] : bakerRoomId);
+
+  const { data: expenses, refetch } = useGetAllExpenseQuery(roomId as string, {
+    skip: !roomId,
+  });
+
+  const { data: baker, refetch: refetchBaker } = useGetBakerRoomQuery(
+    { id: roomId as string },
+    { skip: !roomId },
+  );
+
+  const for_work = expenses?.filter(
+    (expense) => expense.expense_type === "for_work" && expense,
+  );
+  const for_salary = expenses?.filter(
+    (expense) => expense.expense_type === "for_salary" && expense,
+  );
 
   return (
     <div>

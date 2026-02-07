@@ -2,8 +2,7 @@
 import { TbMessageReport } from "react-icons/tb";
 import { TiMessages } from "react-icons/ti";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useStorage } from "@/utils";
+import { useState } from "react";
 import { Loader } from "@/components";
 import { useSelector } from "react-redux";
 import {
@@ -55,18 +54,17 @@ export const CloserHome = () => {
 
   const { bakerRoomId } = useSelector((state: RootState) => state.expense);
 
-  console.log("baker", bakerRoomId);
-  const { data: baker, isLoading } = useGetBakerRoomQuery({
-    id: bakerRoomId.toString(),
-  });
+  // bakerRoomId dan to'g'ri ID ni olish (array bo'lsa birinchi element, string bo'lsa o'zi)
+  const roomId =
+    me?.bakerRoom ||
+    (Array.isArray(bakerRoomId) ? bakerRoomId[0] : bakerRoomId);
+
+  const { data: baker, isLoading } = useGetBakerRoomQuery(
+    { id: roomId as string },
+    { skip: !roomId },
+  );
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!useStorage.getTokens().accessToken) {
-      navigate("/login");
-    }
-  }, [navigate]);
 
   const { data: users } = useGetAllUsersQuery({
     roles: ["BAKER"],
@@ -90,7 +88,7 @@ export const CloserHome = () => {
       },
       onError: (err) => {
         toast.error(
-          (err as { message?: string })?.message || "Xatolik yuz berdi"
+          (err as { message?: string })?.message || "Xatolik yuz berdi",
         );
       },
     });
@@ -119,7 +117,7 @@ export const CloserHome = () => {
       },
       onError: (err) => {
         toast.error(
-          (err as { message?: string })?.message || "Xatolik yuz berdi"
+          (err as { message?: string })?.message || "Xatolik yuz berdi",
         );
       },
     });
@@ -285,7 +283,7 @@ export const CloserHome = () => {
                           </h4>
                           <h4 className="text-blue-950 text-base font-semibold w-1/4">
                             {item?.doughType?.price_for_baker.toLocaleString(
-                              "ru-RU"
+                              "ru-RU",
                             )}
                           </h4>
                           <h4 className="text-blue-950 text-base font-semibold w-1/4">

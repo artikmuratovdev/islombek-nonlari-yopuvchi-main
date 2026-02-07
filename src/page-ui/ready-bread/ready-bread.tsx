@@ -11,18 +11,22 @@ import {
 
 export const ReadyBread = () => {
   const { data: me } = useProfileQuery({});
-  const { data: times } = useGetBakerRoomIdTayyorBreadsTimesQuery({
-    id: me?.bakerRoom as string,
-  });
-  const { data: tayyor } = useGetBakerRoomIdTayyorBreadsQuery({
-    id: me?.bakerRoom as string,
-  });
-  const { data: qolgan } = useGetBakerRoomIdQolganBreadsQuery({
-    id: me?.bakerRoom as string,
-  });
-  const { data: keltirilgan } = useGetBakerRoomIdKelganBreadsQuery({
-    id: me?.bakerRoom as string,
-  });
+  const { data: times } = useGetBakerRoomIdTayyorBreadsTimesQuery(
+    { id: me?.bakerRoom as string },
+    { skip: !me?.bakerRoom },
+  );
+  const { data: tayyor } = useGetBakerRoomIdTayyorBreadsQuery(
+    { id: me?.bakerRoom as string },
+    { skip: !me?.bakerRoom },
+  );
+  const { data: qolgan } = useGetBakerRoomIdQolganBreadsQuery(
+    { id: me?.bakerRoom as string },
+    { skip: !me?.bakerRoom },
+  );
+  const { data: keltirilgan } = useGetBakerRoomIdKelganBreadsQuery(
+    { id: me?.bakerRoom as string },
+    { skip: !me?.bakerRoom },
+  );
 
   return (
     <div>
